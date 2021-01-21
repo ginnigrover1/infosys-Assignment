@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<title>Localate</title>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link rel="stylesheet" type="text/css" href="css/style.css">
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+	<script src='https://kit.fontawesome.com/a076d05399.js'></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+	
+	<link rel="preconnect" href="https://fonts.gstatic.com">
+	<link href="https://fonts.googleapis.com/css2?family=Asap:wght@600&display=swap" rel="stylesheet">
+</head>
+
+<body class="dark-bg" onload="get_project_details();">
+
+<!-- top Bar -->
+<div class="top-bar bg-info text-white py-1">
+	<div class="container p-md-0">
+		<div class="col-lg-12 p-0">
+			<h2><a href="index.html" class="logo-a">localate</a></h2>
+		</div>
+	</div>
+</div>
+<!-- end top Bar -->
+
+<!-- Project Bar -->
+<div class="second-bar bg-secondary py-3">
+	<div class="container p-md-0">
+		<div class="row m-0">
+			<div class="col-lg-7 col-md-5 col-sm-12 col-12 p-0 text-white">
+				<h3 id="projectName"></h3>
+			</div>
+			
+			<div class="col-lg-3 col-md-3 col-sm-6 col-6 p-0 text-right">
+				<select id="selectLang" onchange="chngLang();">
+					<option value='en'>English</option>
+					<option value='fr'>French</option>
+				</select>
+				
+			</div>
+			
+			<div class="col-lg-2 col-md-4 col-sm-6 col-6 p-0 text-right">
+				<button type="button" class="btn btn-info projectBtn rounded-btns" onclick="saveProject('p');">
+					<i class='fas fa-save'></i>&nbsp;&nbsp;Save Project
+				</button>
+				
+			</div>
+		</div>
+	</div>
+</div>
+
+<div class="bg-white py-3">
+	<div class="container p-md-0">
+		<div class="row m-0">
+			<div class="col-lg-7 col-md-4 col-sm-4 col-12 search shadow p-0">
+			<input  type='text' placeholder='Search' class="serachInput">
+			</div>
+			<div class="col-lg-3 col-md-4 col-sm-4 col-6 p-0 text-right btnss">
+				<button type="button" class="btn btn-outline-primary projectBtn rounded-btns" data-toggle="modal" data-target="#projectModal">
+					<i class="fas fa-arrow-circle-up"></i>&nbsp;&nbsp;Import Json
+				</button>
+				
+				
+				<div class="modal fade" id="projectModal">
+					<div class="modal-dialog modal-dialog-centered">
+						<div class="modal-content text-left">
+							<div class="modal-body">
+								<form onsubmit="AddProject(event);">
+									<input type="file" name="import-file" id="importFile" accept="application/json" required>
+									<div class="form-group text-right">
+										<button type="button" class="btn btn-outline-primary projectBtn rounded-btns" onclick="importfile();">
+											<i class="fas fa-arrow-circle-up"></i>&nbsp;&nbsp;Import
+										</button>
+									</div>
+								</form>
+							</div>
+						</div>
+					</div>
+				</div>  
+				
+				
+				
+			</div>
+			<div class="col-lg-2 col-md-4 col-sm-4 col-6 p-0 text-right btnss">
+				<button type="button" class="btn btn-outline-primary projectBtn rounded-btns" onclick="exportFile();">
+					<i class="fas fa-arrow-circle-down"></i>&nbsp;&nbsp;
+					<a id="download_link" download="jsoFile.json" href=”” onclick="exportFile();">Export Json</a>
+				</button>
+			</div>
+		</div>
+	</div>
+</div>
+<!-- End Project Bar -->
+
+<div class="main-sec" id="mainSec">
+	
+	<div class="container p-0">
+		<div class="keywords-list shadow" id="keywordSec">
+			<div id="keywordsList">
+				<div class="row m-0">
+					
+					<div class="col-lg-6 col-md-6 col-sm-6 col-6 p-0" id='en'>
+					
+					</div>
+					
+					<div class="col-lg-6 col-md-6 col-sm-6 col-6 p-0" id='fr' style="display:none;">
+						
+					</div>
+				</div>
+				
+			</div>
+			
+			<div class='mt-4'></div>
+			
+			<div id='addRow'>
+				
+			</div>
+			
+			<div class="col-lg-12 p-0">
+				<button type="button" class="btn btn-info projectBtn rounded-btns mt-4" onclick="addRows();" id="addbtn">
+					<i class="fas fa-plus-circle"></i> Add
+				</button>
+			</div>
+		</div>
+	</div>
+	
+	<div class="toast" data-autohide="false">   
+		<div class="toast-body">
+		  Project Saved Successfully
+		  <button type="button" class="ml-2 mb-1 close" data-dismiss="toast">&times;</button>
+		</div>
+	</div>
+	
+</div>
+
+</body>
+</html>
+
+<script>
+var rowObj ;
+
+function exportFile()
+{
+	
+	var dataArr = [];
+	dataArr = JSON.parse(localStorage.dataRecord);
+	
+	var index = getIndex();
+	
+	var text = JSON.stringify(dataArr[index].keywords,undefined,2);
+	
+	var data = new Blob([text], {type: 'application/json'});
+
+	var url = window.URL.createObjectURL(data);
+
+	document.getElementById('download_link').href = url;
+}
+function importfile()
+{
+	var importedFile = document.getElementById('importFile').files[0];
+	
+	if(importedFile=='' || importedFile==undefined)
+	{
+		alert('Select file');
+		exit;
+	}
+	else{
+		var reader = new FileReader();
+		
+		reader.onload = function() {
+		var fileContent = JSON.parse(reader.result);
+			for(key in fileContent) {	
+				var value_en = key;
+				var value_fn = fileContent[key];
+				var enRow = '<div class="col-lg-12 rows">'+value_en+'<div class="text-secondary">.</div></div>';
+				document.getElementById('en').innerHTML += enRow;
+				var frRow = '<div class="col-lg-12 rows">'+value_fn+'<div class="text-white">.</div></div>';
+				document.getElementById('fr').innerHTML += frRow;
+				
+				rowObj = {eValue:value_en,key:value_en,trans:value_fn};
+				saveProject('e');
+			}
+		};
+		$('#projectModal').modal('hide');	
+		reader.readAsText(importedFile); 
+	}
+}
+
+function addRows()
+{
+	var rowData='<div class="row m-0"><input type="text" placeholder="Value" class="col-lg-4 form-control mt-2" id="eValue">&nbsp &nbsp<input type="text" placeholder="Key" class="col-lg-4 form-control mt-2" id="key"> &nbsp &nbsp<input type="text" placeholder="Translation" class="col-lg-4 form-control mt-2" id="trans">&nbsp&nbsp<div><button class="mt-2 btn btn-primary" onclick="saveRow();">Save Row</button></div></div>';		
+	document.getElementById('addRow').innerHTML += rowData;
+	document.getElementById("addbtn").disabled = true;
+}
+
+function getIndex(){
+	const queryString = window.location.search;
+	const urlParams = new URLSearchParams(queryString);
+	const index = urlParams.get('id');
+	
+	return index ;
+}
+function saveProject(par)
+{
+	
+	var dataArr = [];
+	dataArr = JSON.parse(localStorage.dataRecord);
+	
+	var index = getIndex();
+	
+	//alert(JSON.stringify(rowObj));
+	
+	dataArr[index].keywords.push(rowObj);
+	localStorage.dataRecord = JSON.stringify(dataArr);
+	if(par=='p')
+	{
+		$('.toast').toast('show');
+		setTimeout(function(){ $('.toast').toast('hide'); }, 3000);
+	}
+}
+function saveRow(){
+	
+	var eValue = document.getElementById('eValue').value;
+	var key = document.getElementById('key').value;
+	var trans = document.getElementById('trans').value;
+	
+	if( (eValue=="" || eValue==null || eValue==undefined) || (key=="" || key==null || key==undefined) || (trans=="" || trans==null || trans==undefined))
+	{
+		alert('Enter all values');
+	}
+	else{
+		var enRow = '<div class="col-lg-12 rows">'+eValue+'<div class="text-secondary">'+key+' </div></div>';
+		document.getElementById('en').innerHTML += enRow;
+		var frRow = '<div class="col-lg-12 rows">'+trans+'<div class="text-white">.</div></div>';
+		document.getElementById('fr').innerHTML += frRow;
+		
+		rowObj = {eValue:eValue,key:key,trans:trans};
+		
+		document.getElementById("addbtn").disabled = false;
+		document.getElementById('addRow').innerHTML = "";
+	}
+	
+}
+function chngLang()
+{
+	selectedLang = document.getElementById('selectLang').value;
+	
+	if(selectedLang=='fr')
+	{
+		document.getElementById('fr').style.display='block';
+	}
+	if(selectedLang=='en')
+	{
+		document.getElementById('fr').style.display='none';
+	}
+}
+
+function get_project_details()
+{
+	var dataArr = [];
+	var selectedLang = 'en' ;
+	dataArr = JSON.parse(localStorage.dataRecord);
+	var index = getIndex();
+	document.getElementById('projectName').innerHTML=dataArr[index].projectName;
+	var arrLength = dataArr[index].keywords.length-1;
+	
+	for(var i=0; i <=arrLength; i++)
+	{
+		var enRow = '<div class="col-lg-12 rows">'+dataArr[index].keywords[i].eValue+'<div class="text-secondary">'+dataArr[index].keywords[i].key+' </div></div>';
+		document.getElementById('en').innerHTML += enRow;
+		var frRow = '<div class="col-lg-12 rows">'+dataArr[index].keywords[i].trans+'<div class="text-white">.</div></div>';
+		document.getElementById('fr').innerHTML += frRow;
+	}
+}
+function importFile() {
+    
+	
+}
+
+</script>

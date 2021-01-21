@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<title>Localate</title>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link rel="stylesheet" type="text/css" href="css/style.css">
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+	<script src='https://kit.fontawesome.com/a076d05399.js'></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+	
+	<link rel="preconnect" href="https://fonts.gstatic.com">
+	<link href="https://fonts.googleapis.com/css2?family=Asap:wght@600&display=swap" rel="stylesheet">
+  
+  
+</head>
+
+<body class="bg-secondary" onload="init();">
+<!-- top Bar -->
+<div class="top-bar bg-info text-white py-1">
+	<div class="container p-md-0">
+		<div class="col-lg-12 p-0">
+			<h2><a href="index.html" class="logo-a">localate</a></h2>
+		</div>
+	</div>
+</div>
+<!-- end top Bar -->
+
+<!-- Project Bar -->
+<div class="second-bar bg-secondary py-3">
+	<div class="container p-md-0">
+		<div class="row m-0">
+			<div class="col-lg-9 col-md-8 col-sm-6 col-4 p-0 text-white">
+				<h3>Projects</h3>
+			</div>
+			
+			<div class="col-lg-3 col-md-4 col-sm-6 col-8 p-0 text-right">
+				<button type="button" class="btn btn-info projectBtn rounded-btns" data-toggle="modal" data-target="#projectModal">
+					<i class="fas fa-plus-circle"></i> New Project 
+				</button>
+				
+				<div class="modal fade" id="projectModal">
+					<div class="modal-dialog modal-dialog-centered">
+						<div class="modal-content text-left">
+							<div class="modal-body">
+								<h4 class="modal-title mb-4">New Project</h4>
+								<form onsubmit="AddProject(event);">
+									<div class="form-group">
+										<label for="email">Project Name</label>
+										<input type="text" autofocus class="form-control" id="prjName" required>
+									</div>
+									
+									<div class="form-group">
+										<label for="pwd">Description</label>
+										<input type="text" class="form-control" id="prjDesc" required>
+									</div>
+									
+									<div class="form-group text-right">
+										<button type="button" class="btn btn-outline-secondary rounded-btns form-btns" data-dismiss="modal" onclick="resetForm();">Cancel&nbsp;&nbsp;</button>
+										<button type="submit" class="btn btn-primary rounded-btns form-btns"><i class='fas fa-save'></i>&nbsp;&nbsp;Save Project</button>
+									</div>
+								</form>
+							</div>
+						</div>
+					</div>
+				</div>  
+			</div>
+		</div>
+	</div>
+</div>
+<!-- End Project Bar -->
+
+<div class="main-sec" id="mainSec">
+	
+	<div class="row bg-secondary text-white mt-5" id="noProjects">
+		<div class="col-lg-12 text-center"><h4>No projects found </h4><h5>Create one by clicking New Project</h5></div>
+	</div>
+			
+	<div class="container p-0">
+		<div class="project-sec" id="projectSec">
+			
+			
+		</div>
+	</div>
+	
+</div>
+
+</body>
+</html>
+
+<script>
+function projectdetails(index){
+	var prjtIndex = index;
+	window.location.href = 'details.html?id='+prjtIndex+'';
+}
+
+var dataArr = [];
+var projectID = 101
+
+function init(){
+	//localStorage.clear();
+	document.getElementById('noProjects').style.display="block";
+	document.body.classList.remove("dark-bg");
+	document.body.classList.add("bg-secondary");
+	
+	if(localStorage.dataRecord)
+	{
+		document.getElementById('projectSec').innerHTML = "";
+		
+		dataArr = JSON.parse(localStorage.dataRecord);
+		
+		for(var i=0; i< dataArr.length; i++){
+			projectID = dataArr[i].projectId ++;
+			showProjects(i,dataArr[i].projectid,dataArr[i].projectName,dataArr[i].projectDesc);
+		}
+	}
+}
+function showProjects(index,Id,projectName,projectDesc)
+{
+	var projectData='<div class="project-cards" id=prj'+ Id+'>';
+		projectData +='<div><h5>'+ projectName +'</h5></div><div class="mt-2 text-secondary">'+ projectDesc +'</div><div class="mt-2 font-weight-bold row m-0">';
+		projectData +='<div class="col-3 p-0"> EN </div> <div class="col-3 p-0"> FR </div></div><div class="text-right mt-3">';
+		projectData +='<button type="button" class="col-4 col-md-5 col-lg-4 btn text-primary" onclick="projectdetails('+index+')";>Details</button>';
+		projectData +='<button type="button" class="col-4 col-md-5 col-lg-4 btn text-danger" onclick="deleteProject('+index+')";>Delete</button></div>';
+	
+	document.getElementById('projectSec').innerHTML += projectData;	
+	document.getElementById('noProjects').style.display="none";
+	document.body.classList.remove("bg-secondary");
+	document.body.classList.add("dark-bg");
+}
+function AddProject(event) {
+	
+	event.preventDefault();
+	
+	var prjName = document.getElementById('prjName').value;
+	var prjDesc = document.getElementById('prjDesc').value;
+	var dataObjJs = {projectId:projectID,projectName:prjName,projectDesc:prjDesc,keywords: []};
+	
+	dataArr.push(dataObjJs);
+	
+	var index = dataArr.length-1;
+	
+	showProjects(index,projectID,prjName,prjDesc)
+	localStorage.dataRecord = JSON.stringify(dataArr);
+	projectID++;
+	resetForm();
+	
+	$('#projectModal').modal('hide');	
+}
+function resetForm()
+{
+	document.getElementById('prjName').value="";
+	document.getElementById('prjDesc').value="";
+}
+function deleteProject(index)
+{
+	var res = confirm("Are you sure you want to delete the project ?");
+	
+	if(res)
+	{
+		dataArr.splice(index,1);
+		localStorage.dataRecord = JSON.stringify(dataArr);
+		init();
+	}
+}
+
+</script>
